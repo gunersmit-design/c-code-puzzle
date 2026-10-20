@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Code Jigsaw Puzzle - เกมประกอบโค้ด C เบื้องต้น</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap"
+        rel="stylesheet">
+    <!-- Mobile Drag & Drop Polyfill (Touch Support for Mobile/Tablet) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch-polyfill@0.3.2/min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+
+        .drag-item {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            /* ป้องกันหน้าจอเลื่อนเวลาพยายามลากบนมือถือ */
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .drag-item:active {
+            cursor: grabbing;
+        }
+
+        .drop-slot {
+            transition: all 0.2s ease;
+        }
+
+        .drop-slot.drag-over {
+            border-color: #38bdf8;
+            background-color: rgba(56, 189, 248, 0.15);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between bg-slate-900 text-slate-100 relative overflow-x-hidden">
+
+
+
+    <!-- Main Content Area -->
+    <main class="max-w-5xl mx-auto px-4 py-6 md:py-8 flex-1 w-full flex items-center justify-center">
+
+        <!-- Screen 1: Welcome Screen -->
+        <section id="screen-welcome"
+            class="w-full max-w-2xl bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 md:p-10 text-center shadow-2xl backdrop-blur fade-in">
+            <div
+                class="w-20 h-20 bg-cyan-500/10 border border-cyan-500/30 rounded-3xl mx-auto flex items-center justify-center mb-6 text-cyan-400 text-4xl shadow-inner">
+                <i class="fa-solid fa-puzzle-piece"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-3">ภารกิจประกอบโค้ด C</h2>
+
+            <button onclick="goToScreen('screen-study')"
+                class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-cyan-500/25 transition transform active:scale-95 flex items-center justify-center gap-3 mx-auto">
+                <span>เริ่มศึกษาโครงสร้างโค้ด</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- Screen 2: Code Structure Study (Full Code Box View) -->
+        <section id="screen-study"
+            class="w-full max-w-3xl bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur hidden fade-in">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-700">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-bold text-white">ทำความเข้าใจโครงสร้างภาษา C</h2>
+                </div>
+            </div>
+
+            <!-- Full Code Display Box -->
+            <div
+                class="bg-slate-950 p-5 md:p-6 rounded-2xl border border-slate-700/80 shadow-inner code-font text-sm md:text-lg text-slate-200 space-y-2 mb-8 overflow-x-auto">
+                <div class="text-cyan-300">#include &lt;stdio.h&gt;</div>
+                <div class="text-emerald-400">int main() {</div>
+                <div class="text-yellow-300 pl-4 md:pl-8">printf("Hello World");</div>
+                <div class="text-purple-300 pl-4 md:pl-8">return 0;</div>
+                <div class="text-emerald-400">}</div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+                <button onclick="startPuzzleGame()"
+                    class="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>เริ่มเล่นเกม</span>
+                    <i class="fa-solid fa-puzzle-piece"></i>
+                </button>
+
+                <button onclick="goToScreen('screen-welcome')"
+                    class="w-full sm:w-auto px-5 py-2.5 text-slate-400 hover:text-white transition flex items-center justify-center gap-2 text-sm font-medium">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ
+                </button>
+            </div>
+        </section>
+
+        <!-- Screen 3: Puzzle Game Screen -->
+        <section id="screen-game"
+            class="w-full max-w-5xl bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 md:p-8 shadow-2xl backdrop-blur hidden fade-in">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-700">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-bold text-white">ภารกิจ: ประกอบชิ้นส่วนโค้ด C</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="resetPuzzle()"
+                        class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded-lg transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left text-amber-400"></i> รีเซ็ต
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column: Source Scrambled Code Blocks -->
+                <div>
+                    <h3
+                        class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-cubes text-cyan-400"></i> คลังชิ้นส่วนโค้ด (กดหรือลากเพื่อวาง)
+                    </h3>
+                    <div id="source-pool"
+                        class="min-h-[250px] md:min-h-[280px] bg-slate-950/80 p-3 md:p-4 rounded-xl border border-slate-800 space-y-2.5 flex flex-col justify-center">
+                        <!-- Dynamic Scrambled Items -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Target Drop Slots -->
+                <div>
+                    <h3
+                        class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-400"></i> ลำดับที่วาง
+                    </h3>
+                    <div id="target-slots" class="space-y-2.5">
+                        <!-- Dynamic Drop Slots -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validation Result Alert -->
+            <div id="result-message" class="mt-6 p-4 rounded-xl hidden transition-all"></div>
+
+            <!-- Action Buttons -->
+            <div
+                class="mt-6 pt-4 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <button id="btn-check" onclick="checkAnswer()"
+                    class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/25 transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>ตรวจคำตอบ (เช็กทีละช่อง)</span>
+                </button>
+
+                <button onclick="goToScreen('screen-study')"
+                    class="w-full sm:w-auto px-4 py-2 text-slate-400 hover:text-white transition text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับไปดูโครงสร้าง
+                </button>
+            </div>
+        </section>
+
+        <!-- Screen 4: Completion Screen (แสดงหลังทำภารกิจสำเร็จ 5 ข้อ) -->
+        <section id="screen-success"
+            class="w-full max-w-2xl bg-slate-800/90 border border-emerald-500/50 rounded-2xl p-6 md:p-10 text-center shadow-2xl backdrop-blur hidden fade-in">
+            <div
+                class="w-24 h-24 bg-emerald-500/20 border border-emerald-500/40 rounded-full mx-auto flex items-center justify-center mb-6 text-emerald-400 text-5xl shadow-lg animate-bounce">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-emerald-300 mb-2">ผ่านภารกิจสำเร็จแล้ว 🎉</h2>
+           
+
+            <div
+                class="bg-slate-950 p-4 md:p-5 rounded-xl border border-slate-800 code-font text-xs md:text-sm text-left text-slate-200 space-y-1.5 mb-8 shadow-inner">
+                <div class="text-cyan-300">#include &lt;stdio.h&gt;</div>
+                <div class="text-emerald-400">int main() {</div>
+                <div class="text-yellow-300 pl-4 md:pl-6">printf("Hello World");</div>
+                <div class="text-purple-300 pl-4 md:pl-6">return 0;</div>
+                <div class="text-emerald-400">}</div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button onclick="resetPuzzle(); goToScreen('screen-game');"
+                    class="w-full sm:w-auto px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>เล่นใหม่อีกรอบ</span>
+                </button>
+                <button onclick="goToScreen('screen-study')"
+                    class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2">
+                    <span>ทบทวนโครงสร้างโค้ด</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal 1: Free Hosting Guide Modal -->
+    <div id="hosting-modal"
+        class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-slate-800 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleModal('hosting-modal')"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">วิธีเอาไฟล์เกมนี้ขึ้นเว็บโฮสติ้งฟรี</h3>
+            </div>
+
+            <div class="space-y-4 text-slate-300 text-sm">
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700/60">
+                    <h4 class="font-semibold text-cyan-400 mb-2 flex items-center gap-2">
+                        <span
+                            class="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs flex items-center justify-center">1</span>
+                        วิธี Netlify Drop (ง่ายที่สุดใน 1 นาที)
+                    </h4>
+                    <ol class="list-decimal list-inside space-y-1 text-slate-300 text-xs leading-relaxed pl-1">
+                        <li>บันทึกไฟล์โค้ดนี้ตั้งชื่อว่า <code
+                                class="bg-slate-950 px-1.5 py-0.5 rounded text-amber-300">index.html</code></li>
+                        <li>เอาไฟล์ไปใส่ไว้ในโฟลเดอร์เปล่า เช่น ตั้งชื่อโฟลเดอร์ว่า <code
+                                class="bg-slate-950 px-1.5 py-0.5 rounded text-amber-300">c-game</code></li>
+                        <li>เปิดเว็บไซต์ <a href="https://app.netlify.com/drop" target="_blank"
+                                class="text-cyan-400 underline">app.netlify.com/drop</a></li>
+                        <li><b>ลากโฟลเดอร์</b> มาวางในหน้าเว็บ Netlify ได้ลิงก์ใช้งานทันที!</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-700 flex justify-end">
+                <button onclick="toggleModal('hosting-modal')"
+                    class="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg text-sm transition">
+                    เข้าใจแล้ว
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        const codeBlocks = [
+            { id: 'b1', code: '#include <stdio.h>', color: 'text-cyan-300', desc: 'ดึงกล่องเครื่องมือ' },
+            { id: 'b2', code: 'int main() {', color: 'text-emerald-400', desc: 'ฟังก์ชันหลัก' },
+            { id: 'b3', code: '    printf("Hello World");', color: 'text-yellow-300', desc: 'พิมพ์ข้อความ' },
+            { id: 'b4', code: '    return 0;', color: 'text-purple-300', desc: 'จบฟังก์ชันหลัก' },
+            { id: 'b5', code: '}', color: 'text-emerald-400', desc: 'ปีกกาปิด main' }
+        ];
+
+        let currentSlots = [null, null, null, null, null];
+        let slotValidationStatus = [null, null, null, null, null];
+
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'partial') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                }
+            } catch (e) { }
+        }
+
+        function goToScreen(screenId) {
+            playSound('click');
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function toggleModal(modalId) {
+            playSound('click');
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+        }
+
+        function startPuzzleGame() {
+            goToScreen('screen-game');
+            resetPuzzle();
+        }
+
+        function resetPuzzle() {
+            playSound('click');
+            currentSlots = [null, null, null, null, null];
+            slotValidationStatus = [null, null, null, null, null];
+
+            const msgBox = document.getElementById('result-message');
+            msgBox.className = 'mt-6 p-4 rounded-xl hidden transition-all';
+            msgBox.innerHTML = '';
+
+            renderPuzzle();
+        }
+
+        function renderPuzzle() {
+            const poolContainer = document.getElementById('source-pool');
+            const slotsContainer = document.getElementById('target-slots');
+
+            poolContainer.innerHTML = '';
+            slotsContainer.innerHTML = '';
+
+            const placedIds = currentSlots.filter(item => item !== null).map(item => item.id);
+            const availableItems = codeBlocks.filter(item => !placedIds.includes(item.id));
+
+            if (placedIds.length === 0) {
+                availableItems.sort(() => Math.random() - 0.5);
+            }
+
+            if (availableItems.length === 0) {
+                poolContainer.innerHTML = `
+                    <div class="text-center py-6 text-slate-500 text-sm">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2"></i>
+                        <p>เลือกชิ้นส่วนครบทุกช่องแล้ว!</p>
+                        <p class="text-xs text-slate-600 mt-1">กดปุ่ม "ตรวจคำตอบ" ด้านล่างได้เลย</p>
+                    </div>
+                `;
+            } else {
+                availableItems.forEach((block) => {
+                    const blockEl = document.createElement('div');
+                    blockEl.className = 'drag-item bg-slate-900 border border-slate-700/80 hover:border-cyan-400 p-3 md:p-3.5 rounded-xl flex items-center justify-between gap-2 shadow-md transition cursor-pointer';
+                    blockEl.draggable = true;
+                    blockEl.setAttribute('id', block.id);
+                    blockEl.setAttribute('onclick', `autoPlaceBlock('${block.id}')`);
+
+                    blockEl.innerHTML = `
+                        <div class="code-font font-semibold text-xs md:text-sm overflow-x-auto ${block.color}">${escapeHtml(block.code)}</div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded hidden sm:inline">${block.desc}</span>
+                            <div class="w-7 h-7 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white rounded-lg flex items-center justify-center text-xs transition pointer-events-none">
+                                <i class="fa-solid fa-plus"></i>
+                            </div>
+                        </div>
+                    `;
+
+                    blockEl.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', block.id);
+                        blockEl.classList.add('opacity-50');
+                    });
+                    blockEl.addEventListener('dragend', () => {
+                        blockEl.classList.remove('opacity-50');
+                    });
+
+                    poolContainer.appendChild(blockEl);
+                });
+            }
+
+            for (let i = 0; i < 5; i++) {
+                const slotEl = document.createElement('div');
+                const placedItem = currentSlots[i];
+                const status = slotValidationStatus[i];
+
+                let borderStyle = 'border-slate-700/60 bg-slate-950/40';
+                if (placedItem) {
+                    if (status === true) borderStyle = 'border-emerald-500 bg-emerald-950/30';
+                    else if (status === false) borderStyle = 'border-rose-500 bg-rose-950/30';
+                    else borderStyle = 'border-slate-700 bg-slate-900/90';
+                }
+
+                slotEl.className = `drop-slot border-2 rounded-xl p-2.5 md:p-3 min-h-[54px] flex items-center justify-between transition ${borderStyle}`;
+                slotEl.setAttribute('data-slot-index', i);
+
+                if (placedItem) {
+                    let badgeHtml = '';
+                    if (status === true) {
+                        badgeHtml = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] md:text-xs px-2 py-0.5 rounded-full flex items-center gap-1"><i class="fa-solid fa-check"></i> ถูก</span>`;
+                    } else if (status === false) {
+                        badgeHtml = `<span class="bg-rose-500/20 text-rose-400 text-[10px] md:text-xs px-2 py-0.5 rounded-full flex items-center gap-1"><i class="fa-solid fa-xmark"></i> ผิด</span>`;
+                    }
+
+                    slotEl.innerHTML = `
+                        <div class="flex items-center gap-2 overflow-x-auto">
+                            <span class="w-5 h-5 rounded bg-slate-800 text-slate-400 text-[11px] font-bold flex items-center justify-center flex-shrink-0">${i + 1}</span>
+                            <span class="code-font font-semibold text-xs md:text-sm ${placedItem.color}">${escapeHtml(placedItem.code)}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            ${badgeHtml}
+                            <button onclick="removeFromSlot(${i})" class="text-slate-400 hover:text-rose-400 w-7 h-7 rounded-lg hover:bg-rose-500/10 flex items-center justify-center text-xs transition" title="เอาออก">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    slotEl.innerHTML = `
+                        <div class="flex items-center gap-2 text-slate-600 text-xs md:text-sm">
+                            <span class="w-5 h-5 rounded bg-slate-900 text-slate-600 text-[11px] font-bold flex items-center justify-center">${i + 1}</span>
+                            <span>วางบรรทัดที่ ${i + 1} ที่นี่</span>
+                        </div>
+                    `;
+                }
+
+                slotEl.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slotEl.classList.add('drag-over');
+                });
+                slotEl.addEventListener('dragleave', () => {
+                    slotEl.classList.remove('drag-over');
+                });
+                slotEl.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slotEl.classList.remove('drag-over');
+                    const blockId = e.dataTransfer.getData('text/plain');
+                    if (blockId) {
+                        placeInSlot(blockId, i);
+                    }
+                });
+
+                slotsContainer.appendChild(slotEl);
+            }
+        }
+
+        function placeInSlot(blockId, slotIndex) {
+            playSound('click');
+            const blockObj = codeBlocks.find(b => b.id === blockId);
+            if (!blockObj) return;
+
+            const existingIndex = currentSlots.findIndex(item => item && item.id === blockId);
+            if (existingIndex !== -1) {
+                currentSlots[existingIndex] = null;
+                slotValidationStatus[existingIndex] = null;
+            }
+
+            currentSlots[slotIndex] = blockObj;
+            slotValidationStatus[slotIndex] = null;
+            renderPuzzle();
+        }
+
+        function autoPlaceBlock(blockId) {
+            const emptyIndex = currentSlots.findIndex(slot => slot === null);
+            if (emptyIndex !== -1) {
+                placeInSlot(blockId, emptyIndex);
+            }
+        }
+
+        function removeFromSlot(slotIndex) {
+            playSound('click');
+            currentSlots[slotIndex] = null;
+            slotValidationStatus[slotIndex] = null;
+            renderPuzzle();
+        }
+
+        function checkAnswer() {
+            const msgBox = document.getElementById('result-message');
+            let correctCount = 0;
+            let filledCount = 0;
+
+            for (let i = 0; i < 5; i++) {
+                if (currentSlots[i] !== null) {
+                    filledCount++;
+                    if (currentSlots[i].id === codeBlocks[i].id) {
+                        slotValidationStatus[i] = true;
+                        correctCount++;
+                    } else {
+                        slotValidationStatus[i] = false;
+                    }
+                } else {
+                    slotValidationStatus[i] = null;
+                }
+            }
+
+            renderPuzzle();
+
+            if (filledCount === 0) {
+                msgBox.className = 'mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-center gap-3 fade-in';
+                msgBox.innerHTML = `
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    <span>ยังไม่ได้วางชิ้นส่วนเลยครับ ลองลากชิ้นส่วนมาวางดูก่อนนะ!</span>
+                `;
+                return;
+            }
+
+            if (correctCount === 5) {
+                playSound('success');
+                // หน่วงเวลาสั้นๆ (0.6 วินาที) แล้วพาไปหน้าสำเร็จทันที
+                setTimeout(() => {
+                    goToScreen('screen-success');
+                }, 600);
+            } else {
+                playSound('partial');
+                msgBox.className = 'mt-6 p-5 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-200 text-sm fade-in';
+                msgBox.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl flex-shrink-0">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-base text-cyan-300 mb-1">ตรวจผลงานแล้ว: ถูกต้อง <span class="text-emerald-400">${correctCount}</span> / 5 ช่อง</h4>
+                            <p class="text-slate-300 text-xs md:text-sm leading-relaxed">
+                                สังเกตช่องที่มีป้ายสีเขียวคือวางถูกแล้ว ส่วนช่องที่มีป้ายสีแดงลองสลับย้ายตำแหน่งดูใหม่นะ สู้ๆ!
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+
+</html>
